@@ -1,0 +1,2 @@
+# Markov Chains
+This is a small (tiny) repo with two scripts to simmulate markov chains running overtime. The python script allows for graphing to visualize convergence, while the java is much more performant for long conversion tests.
