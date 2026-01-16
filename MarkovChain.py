@@ -176,7 +176,7 @@ if __name__ == "__main__":
 
         if weather.checkGraph():
             weather.printGraph()
-            weather.runChainIterations(5000, "Sunny", 10)
-            chain.graph_results()
+            weather.runChainIterations(100, "Sunny", 10)
+            weather.graph_results()
     except MarkovChainException as e:
         print(e)
