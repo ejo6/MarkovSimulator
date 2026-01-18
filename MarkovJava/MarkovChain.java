@@ -1,3 +1,4 @@
+package MarkovJava;
 import java.util.*;
 
 // The Markov Chain is a directed-multigraph in an adjacency list (not matrix)
@@ -64,10 +65,14 @@ public class MarkovChain {
     }
 
     // Run the markov chain indefinitely
-    public HashMap<String, Integer> runChain(String start) throws MarkovChainException {
+    public ChainResult runChainIndefinitely(String start) throws MarkovChainException {
         // Copy values into result map
         HashMap<String, Integer> result = copyChainToMap();
-       
+        HashMap<String, Double> proportions = new HashMap<>();
+        for (String state : result.keySet()) {
+            proportions.put(state, 0d);
+        }
+
         // Shut down logic
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("\nCtrl+C detected. Shutting down loop...");
@@ -79,6 +84,9 @@ public class MarkovChain {
         if (chain.get(cur) == null) {
             throw new MarkovChainException("Start node: \"" + cur + "\" not found.");
         }
+
+        System.out.println("Running Chain indefinitely, Ctrl+C to stop.");
+        int iterations = 0;
 
         while (running) {
             double random = Math.random();
@@ -93,24 +101,31 @@ public class MarkovChain {
 
             cur = to;
             result.put(cur, result.get(cur) + 1); 
+            iterations++;
+        }
+        
+        for (String state : result.keySet()) {
+            proportions.put(state, (double) result.get(state) / iterations);
         }
 
-        System.out.println(result.toString());
-        return result;
+        return new ChainResult(result, proportions);
     }
 
     // Run the chain until it iterates out
-    public HashMap<String, Integer> runChain(int iterations, String start) throws MarkovChainException {
+    public ChainResult runChain(int iterations, int burnIn, String start) throws MarkovChainException {
         // Copy values into result map
         HashMap<String, Integer> result = copyChainToMap();
-
+        HashMap<String, Double> proportions = new HashMap<>();
+        for (String state : result.keySet()) {
+            proportions.put(state, 0d);
+        }
 
         // Loop around until were done
         int i = 0;        
         String cur = start;
         if (chain.get(cur) == null) {throw new MarkovChainException("Start node: \"" + cur + "\" not found.");}
 
-        while (i < iterations) {
+        while (i < burnIn + iterations) {
             double random = Math.random();
             double sum = 0;
             String to = "";
@@ -120,13 +135,19 @@ public class MarkovChain {
                 to = edge.toNode;
                 if (random < sum) break;
             }
-
-            cur = to;
-            result.put(cur, result.get(cur) + 1); 
-            i++;
+            
+            if (i >= burnIn) {
+                cur = to;
+                result.put(cur, result.get(cur) + 1); 
+                i++;
+            }
         }
-        System.out.println(result.toString());
-        return result;
+
+        for (String state : result.keySet()) {
+            proportions.put(state, (double) result.get(state) / iterations);
+        }
+
+        return new ChainResult(result, proportions);
     }
 
 
@@ -141,40 +162,40 @@ public class MarkovChain {
             chain.addEdge("Consonant", "Consonant", 0.33);
             if (chain.checkGraph()) {
                 chain.printGraph();
-                chain.runChain(1000, "Vowel");
+                chain.runChain(1000, 0, "Vowel").printAll();
             }
         } catch (MarkovChainException e) {
             System.err.println(e);
         }
 
-        // System.out.println("\nWeather Markov Chain:");
-        // try {
-        //     MarkovChain weather = new MarkovChain();
+        System.out.println("\nWeather Markov Chain:");
+        try {
+            MarkovChain weather = new MarkovChain();
 
-        //     // States: Sunny, Cloudy, Rainy, Snowy
-        //     weather.addEdge("Sunny", "Sunny", 0.6);
-        //     weather.addEdge("Sunny", "Cloudy", 0.3);
-        //     weather.addEdge("Sunny", "Rainy", 0.1);
+            // States: Sunny, Cloudy, Rainy, Snowy
+            weather.addEdge("Sunny", "Sunny", 0.6);
+            weather.addEdge("Sunny", "Cloudy", 0.3);
+            weather.addEdge("Sunny", "Rainy", 0.1);
 
-        //     weather.addEdge("Cloudy", "Sunny", 0.3);
-        //     weather.addEdge("Cloudy", "Cloudy", 0.4);
-        //     weather.addEdge("Cloudy", "Rainy", 0.2);
-        //     weather.addEdge("Cloudy", "Snowy", 0.1);
+            weather.addEdge("Cloudy", "Sunny", 0.3);
+            weather.addEdge("Cloudy", "Cloudy", 0.4);
+            weather.addEdge("Cloudy", "Rainy", 0.2);
+            weather.addEdge("Cloudy", "Snowy", 0.1);
 
-        //     weather.addEdge("Rainy", "Cloudy", 0.4);
-        //     weather.addEdge("Rainy", "Rainy", 0.5);
-        //     weather.addEdge("Rainy", "Sunny", 0.1);
+            weather.addEdge("Rainy", "Cloudy", 0.4);
+            weather.addEdge("Rainy", "Rainy", 0.5);
+            weather.addEdge("Rainy", "Sunny", 0.1);
 
-        //     weather.addEdge("Snowy", "Snowy", 0.6);
-        //     weather.addEdge("Snowy", "Cloudy", 0.3);
-        //     weather.addEdge("Snowy", "Sunny", 0.1);
+            weather.addEdge("Snowy", "Snowy", 0.6);
+            weather.addEdge("Snowy", "Cloudy", 0.3);
+            weather.addEdge("Snowy", "Sunny", 0.1);
 
-        //     if (weather.checkGraph()) {
-        //         weather.printGraph();
-        //         weather.runChain(1000, "Sunny");
-        //     }
-        // } catch (MarkovChainException e) {
-        //     System.err.println(e);
-        // }
+            if (weather.checkGraph()) {
+                weather.printGraph();
+                weather.runChainIndefinitely( "Sunny").printAll();;
+            }
+        } catch (MarkovChainException e) {
+            System.err.println(e);
+        }
     }
 }

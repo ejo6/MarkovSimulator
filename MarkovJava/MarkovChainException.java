@@ -1,3 +1,4 @@
+package MarkovJava;
 public class MarkovChainException extends Exception {
     public MarkovChainException() {
         super();

@@ -150,33 +150,34 @@ if __name__ == "__main__":
         if chain.checkGraph():
             chain.printGraph()
             chain.runChainIterations(1000, "Vowel", 10)
+            chain.graph_results()
     except MarkovChainException as e:
         print(e)
 
-    print("\nWeather Markov Chain:")
-    try:
-        weather = MarkovChain()
+    # print("\nWeather Markov Chain:")
+    # try:
+    #     weather = MarkovChain()
 
-        weather.addEdge("Sunny", "Sunny", 0.6)
-        weather.addEdge("Sunny", "Cloudy", 0.3)
-        weather.addEdge("Sunny", "Rainy", 0.1)
+    #     weather.addEdge("Sunny", "Sunny", 0.6)
+    #     weather.addEdge("Sunny", "Cloudy", 0.3)
+    #     weather.addEdge("Sunny", "Rainy", 0.1)
 
-        weather.addEdge("Cloudy", "Sunny", 0.3)
-        weather.addEdge("Cloudy", "Cloudy", 0.4)
-        weather.addEdge("Cloudy", "Rainy", 0.2)
-        weather.addEdge("Cloudy", "Snowy", 0.1)
+    #     weather.addEdge("Cloudy", "Sunny", 0.3)
+    #     weather.addEdge("Cloudy", "Cloudy", 0.4)
+    #     weather.addEdge("Cloudy", "Rainy", 0.2)
+    #     weather.addEdge("Cloudy", "Snowy", 0.1)
 
-        weather.addEdge("Rainy", "Cloudy", 0.4)
-        weather.addEdge("Rainy", "Rainy", 0.5)
-        weather.addEdge("Rainy", "Sunny", 0.1)
+    #     weather.addEdge("Rainy", "Cloudy", 0.4)
+    #     weather.addEdge("Rainy", "Rainy", 0.5)
+    #     weather.addEdge("Rainy", "Sunny", 0.1)
 
-        weather.addEdge("Snowy", "Snowy", 0.6)
-        weather.addEdge("Snowy", "Cloudy", 0.3)
-        weather.addEdge("Snowy", "Sunny", 0.1)
+    #     weather.addEdge("Snowy", "Snowy", 0.6)
+    #     weather.addEdge("Snowy", "Cloudy", 0.3)
+    #     weather.addEdge("Snowy", "Sunny", 0.1)
 
-        if weather.checkGraph():
-            weather.printGraph()
-            weather.runChainIterations(100, "Sunny", 10)
-            weather.graph_results()
-    except MarkovChainException as e:
-        print(e)
+    #     if weather.checkGraph():
+    #         weather.printGraph()
+    #         weather.runChainIterations(1000, "Sunny", 10)
+    #         weather.graph_results()
+    # except MarkovChainException as e:
+    #     print(e)
