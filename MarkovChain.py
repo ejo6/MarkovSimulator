@@ -3,6 +3,8 @@ import random
 import pandas as pd
 import matplotlib.pyplot as plt
 
+CSV_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "csv_output")
+
 class MarkovChainException(Exception):
     pass
 
@@ -42,6 +44,12 @@ class MarkovChain:
     def copyChainToMain(self) -> dict[str, int]:
         return {fromNode: 0 for fromNode in self.chain.keys()}
 
+    def _resolve_csv_path(self, csv_path: str) -> str:
+        if os.path.dirname(csv_path):
+            return csv_path
+        os.makedirs(CSV_DIR, exist_ok=True)
+        return os.path.join(CSV_DIR, csv_path)
+
     def runChainIndefinite(self, start: str, write_interval: int = 0) -> dict[str, int]:
         result = self.copyChainToMain()
         i = 0 # track interations incase we're writing to csv
@@ -49,6 +57,7 @@ class MarkovChain:
         cur = start
         if self.chain.get(cur) is None:
             raise MarkovChainException(f'Start node: "{cur}" not found.')
+        csv_path = self._resolve_csv_path("convergence.csv")
         try:
             while True:
                 random_num = random.random()
@@ -65,7 +74,6 @@ class MarkovChain:
                 if write_interval != 0 and i % write_interval == 0:
                     result_df = pd.DataFrame([result])
                     result_df.insert(0, "Iteration", i)
-                    csv_path = "convergence.csv"
                     write_header = (not os.path.exists(csv_path)) or os.path.getsize(csv_path) == 0
                     result_df.to_csv(csv_path, mode="a", header=write_header, index=False)
 
@@ -76,15 +84,19 @@ class MarkovChain:
         print(result)
         return result
 
-    def runChainIterations(self, iterations: int, start: str, burnIn: int = 0, write_interval: int = 0, csv_path: str = "convergence.csv",) -> dict[str, int]:
+    def runChainIterations(self, iterations: int, start: str, burnIn: int = 0, write_interval: int = 0, csv_path: str = "convergence.csv",) -> tuple[dict[str, int], dict[str, float]]:
         # Initialize self
         result = self.copyChainToMain()
-        
+        proportions = {}
+        for state in result.keys():
+            proportions[state] = 0
+
         i = 0
         cur = start
         if self.chain.get(cur) is None:
             raise MarkovChainException(f'Start node: "{cur}" not found.')
 
+        csv_path = self._resolve_csv_path(csv_path)
         if write_interval != 0:
             self._csv_cleanup(csv_path)
 
@@ -112,13 +124,19 @@ class MarkovChain:
                 write_header = (not os.path.exists(csv_path)) or os.path.getsize(csv_path) == 0
                 result_df.to_csv(csv_path, mode="a", header=write_header, index=False)            
 
+        for state in result.keys():
+            proportions[state] = result[state] / iterations
+
         print(result)
-        return result
+        print(proportions)
+        return result, proportions
     
     def _csv_cleanup(self, csv_path: str):
+        csv_path = self._resolve_csv_path(csv_path)
         open(csv_path, "w").close()
 
     def graph_results(self, csv_path: str = "convergence.csv"):
+        csv_path = self._resolve_csv_path(csv_path)
         if (not os.path.exists(csv_path)) or os.path.getsize(csv_path) == 0:
             print("No data to graph.")
             return
