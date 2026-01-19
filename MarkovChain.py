@@ -76,7 +76,7 @@ class MarkovChain:
         print(result)
         return result
 
-    def runChainIterations(self, iterations: int, start: str, write_interval: int = 0) -> dict[str, int]:
+    def runChainIterations(self, iterations: int, start: str, burnIn: int = 0, write_interval: int = 0, csv_path: str = "convergence.csv",) -> dict[str, int]:
         # Initialize self
         result = self.copyChainToMain()
         
@@ -86,7 +86,7 @@ class MarkovChain:
             raise MarkovChainException(f'Start node: "{cur}" not found.')
 
         if write_interval != 0:
-            self._csv_cleanup()
+            self._csv_cleanup(csv_path)
 
         while i < iterations:
             random_num = random.random()
@@ -100,27 +100,25 @@ class MarkovChain:
                     break
 
             cur = to
-            result[cur] = result[cur] + 1
+            i += 1
+            
+            # Only write to results if past burn in threshold
+            if i > burnIn: result[cur] = result[cur] + 1
 
+            # Logic for csv
             if write_interval != 0 and i % write_interval == 0:
                 result_df = pd.DataFrame([result])
                 result_df.insert(0, "Iteration", i)
-                csv_path = "convergence.csv"
                 write_header = (not os.path.exists(csv_path)) or os.path.getsize(csv_path) == 0
-                result_df.to_csv(csv_path, mode="a", header=write_header, index=False)
-
-            # Next iteration
-            i += 1
+                result_df.to_csv(csv_path, mode="a", header=write_header, index=False)            
 
         print(result)
         return result
     
-    def _csv_cleanup(self):
-        csv_path = "convergence.csv"
+    def _csv_cleanup(self, csv_path: str):
         open(csv_path, "w").close()
 
-    def graph_results(self):
-        csv_path = "convergence.csv"
+    def graph_results(self, csv_path: str = "convergence.csv"):
         if (not os.path.exists(csv_path)) or os.path.getsize(csv_path) == 0:
             print("No data to graph.")
             return
@@ -149,35 +147,35 @@ if __name__ == "__main__":
         chain.addEdge("Consonant", "Consonant", 0.33)
         if chain.checkGraph():
             chain.printGraph()
-            chain.runChainIterations(1000, "Vowel", 10)
-            chain.graph_results()
+            chain.runChainIterations(1000, "Vowel", burnIn=100, write_interval=10, csv_path="convergence_vowel.csv")
+            chain.graph_results(csv_path="convergence_vowel.csv")
     except MarkovChainException as e:
         print(e)
 
-    # print("\nWeather Markov Chain:")
-    # try:
-    #     weather = MarkovChain()
+    print("\nWeather Markov Chain:")
+    try:
+        weather = MarkovChain()
 
-    #     weather.addEdge("Sunny", "Sunny", 0.6)
-    #     weather.addEdge("Sunny", "Cloudy", 0.3)
-    #     weather.addEdge("Sunny", "Rainy", 0.1)
+        weather.addEdge("Sunny", "Sunny", 0.6)
+        weather.addEdge("Sunny", "Cloudy", 0.3)
+        weather.addEdge("Sunny", "Rainy", 0.1)
 
-    #     weather.addEdge("Cloudy", "Sunny", 0.3)
-    #     weather.addEdge("Cloudy", "Cloudy", 0.4)
-    #     weather.addEdge("Cloudy", "Rainy", 0.2)
-    #     weather.addEdge("Cloudy", "Snowy", 0.1)
+        weather.addEdge("Cloudy", "Sunny", 0.3)
+        weather.addEdge("Cloudy", "Cloudy", 0.4)
+        weather.addEdge("Cloudy", "Rainy", 0.2)
+        weather.addEdge("Cloudy", "Snowy", 0.1)
 
-    #     weather.addEdge("Rainy", "Cloudy", 0.4)
-    #     weather.addEdge("Rainy", "Rainy", 0.5)
-    #     weather.addEdge("Rainy", "Sunny", 0.1)
+        weather.addEdge("Rainy", "Cloudy", 0.4)
+        weather.addEdge("Rainy", "Rainy", 0.5)
+        weather.addEdge("Rainy", "Sunny", 0.1)
 
-    #     weather.addEdge("Snowy", "Snowy", 0.6)
-    #     weather.addEdge("Snowy", "Cloudy", 0.3)
-    #     weather.addEdge("Snowy", "Sunny", 0.1)
+        weather.addEdge("Snowy", "Snowy", 0.6)
+        weather.addEdge("Snowy", "Cloudy", 0.3)
+        weather.addEdge("Snowy", "Sunny", 0.1)
 
-    #     if weather.checkGraph():
-    #         weather.printGraph()
-    #         weather.runChainIterations(1000, "Sunny", 10)
-    #         weather.graph_results()
-    # except MarkovChainException as e:
-    #     print(e)
+        if weather.checkGraph():
+            weather.printGraph()
+            weather.runChainIterations(1000, "Sunny", 10, write_interval=10, csv_path="convergence_weather.csv")
+            weather.graph_results(csv_path="convergence_weather.csv")
+    except MarkovChainException as e:
+        print(e)
