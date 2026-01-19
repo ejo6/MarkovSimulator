@@ -2,8 +2,10 @@
 This is a small repo with two scripts to simmulate markov chains running overtime. The python script allows for graphing to visualize convergence, while the java is much more performant for long conversion tests. In both cases, the chain is represented with a weighted directed graph data structure.
 
 To quickstart: 
-```
+```bash
 uvicorn api:app --reload
+
+# New terminal
 cd frontend
 node server.js
 ```
