@@ -136,10 +136,12 @@ public class MarkovChain {
                 if (random < sum) break;
             }
             
-            if (i >= burnIn) {
-                cur = to;
+            cur = to;
+            i++;
+            
+            // Only write to results if past burn in threshold
+            if (i > burnIn) {     
                 result.put(cur, result.get(cur) + 1); 
-                i++;
             }
         }
 
@@ -162,7 +164,7 @@ public class MarkovChain {
             chain.addEdge("Consonant", "Consonant", 0.33);
             if (chain.checkGraph()) {
                 chain.printGraph();
-                chain.runChain(1000, 0, "Vowel").printAll();
+                chain.runChain(1000, 100, "Vowel").printAll();
             }
         } catch (MarkovChainException e) {
             System.err.println(e);
