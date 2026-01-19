@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Markov Chain Runner</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <p class="eyebrow">Markov Chain Simulation</p>
+        <h1>Run the chain and see the counts.</h1>
+        <p class="subhead">Current frontend! Feel free to improve, I do not like building frontends.</p>
+      </header>
+
+      <section class="panel">
+        <form id="chain-form">
+          <label class="field">
+            <span>Edges (JSON array)</span>
+            <textarea id="edges" rows="10">[{"fromNode":"Vowel","toNode":"Consonant","weight":0.87},{"fromNode":"Vowel","toNode":"Vowel","weight":0.13},{"fromNode":"Consonant","toNode":"Vowel","weight":0.67},{"fromNode":"Consonant","toNode":"Consonant","weight":0.33}]</textarea>
+          </label>
+          <div class="row">
+            <label class="field">
+              <span>Start</span>
+              <input id="start" value="Vowel" />
+            </label>
+            <label class="field">
+              <span>Iterations</span>
+              <input id="iterations" type="number" value="1000" />
+            </label>
+          </div>
+          <div class="row">
+            <label class="field">
+              <span>Burn in</span>
+              <input id="burnIn" type="number" value="100" />
+            </label>
+            <label class="field">
+              <span>Write interval</span>
+              <input id="writeInterval" type="number" value="0" />
+            </label>
+          </div>
+          <button class="action" type="submit">Run simulation</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="output-header">
+          <h2>Result</h2>
+          <span id="status">Idle</span>
+        </div>
+        <pre id="output">{}</pre>
+        <div class="chart">
+          <img id="chart" alt="Markov chain chart" />
+        </div>
+      </section>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

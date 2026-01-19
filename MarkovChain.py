@@ -1,6 +1,9 @@
 import os
+import io
 import random
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 CSV_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "csv_output")
@@ -135,6 +138,7 @@ class MarkovChain:
         csv_path = self._resolve_csv_path(csv_path)
         open(csv_path, "w").close()
 
+    # For script use
     def graph_results(self, csv_path: str = "convergence.csv"):
         csv_path = self._resolve_csv_path(csv_path)
         if (not os.path.exists(csv_path)) or os.path.getsize(csv_path) == 0:
@@ -153,6 +157,30 @@ class MarkovChain:
         plt.title("Markov Chain Convergence (Proportions)")
         plt.tight_layout()
         plt.show()
+
+    # For frontend use
+    def graph_results_image(self, csv_path: str = "convergence.csv") -> bytes:
+        csv_path = self._resolve_csv_path(csv_path)
+        if (not os.path.exists(csv_path)) or os.path.getsize(csv_path) == 0:
+            raise MarkovChainException("No data to graph.")
+        df = pd.read_csv(csv_path)
+        x = "Iteration"
+        y_cols = [col for col in df.columns if col != x]
+        totals = df[y_cols].sum(axis=1)
+        proportions = df[y_cols].div(totals, axis=0)
+        proportions.insert(0, x, df[x])
+        proportions = proportions.sort_values(by=x)
+        fig, ax = plt.subplots()
+        proportions.plot(x=x, y=y_cols, kind="line", marker="o", ax=ax)
+        ax.set_xlabel("Iterations")
+        ax.set_ylabel("Proportion")
+        ax.set_title("Markov Chain Convergence (Proportions)")
+        fig.tight_layout()
+        buffer = io.BytesIO()
+        fig.savefig(buffer, format="png")
+        plt.close(fig)
+        buffer.seek(0)
+        return buffer.getvalue()
     
 
 if __name__ == "__main__":

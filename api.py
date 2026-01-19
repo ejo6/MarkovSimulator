@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 from MarkovChain import MarkovChain, MarkovChainException
 
@@ -37,3 +37,12 @@ def run_chain(payload: ChainRequest):
     except MarkovChainException as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {"result": result, "proportions": proportions}
+
+@app.get("/chart")
+def chart(csv_path: str = "convergence.csv"):
+    chain = MarkovChain()
+    try:
+        image_bytes = chain.graph_results_image(csv_path)
+    except MarkovChainException as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return Response(content=image_bytes, media_type="image/png")
